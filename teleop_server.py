@@ -18,7 +18,7 @@ async def handler(websocket):
 
     state = State.START
     robot_id = ""
-    valid_robots = [1, 2, 10, 23]
+    valid_robots = [36, 37, 38, 39, 40]
     forwards = "w"
     backwards = "s"
     left = "a"
