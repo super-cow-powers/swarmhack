@@ -352,7 +352,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Specify robots to work with
-    robot_ids = range(31, 32)
+    robot_ids = range(36, 41)
     # robot_ids = [1,31]
 
     for robot_id in robot_ids:
