@@ -1,0 +1,2 @@
+def update_flock(flock):
+    return flock
