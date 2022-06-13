@@ -90,10 +90,11 @@ class Robot:
     def __init__(self, id):
         self.id = id
         self.connection = None
-        self.left = 0
-        self.right = 0
+        self.left = 0.0
+        self.right = 0.0
         self.orientation = 0
         self.neighbours = {}
+        self.tasks = {}
 
         self.teleop = False
         self.state = RobotState.STOP

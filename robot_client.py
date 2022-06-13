@@ -13,7 +13,6 @@ import time
 import sys
 from enum import Enum
 import time
-import random
 
 import colorama
 from colorama import Fore
@@ -26,15 +25,16 @@ colorama.init(autoreset=True)
 # Handle Ctrl+C termination
 
 # https://stackoverflow.com/questions/2148888/python-trap-all-signals
-SIGNALS_TO_NAMES_DICT = dict((getattr(signal, n), n) \
-    for n in dir(signal) if n.startswith('SIG') and '_' not in n)
+SIGNALS_TO_NAMES_DICT = dict(
+    (getattr(signal, n), n) for n in dir(signal) if n.startswith("SIG") and "_" not in n
+)
 
 # https://github.com/aaugustin/websockets/issues/124
 __kill_now = False
 
 
 def __set_kill_now(signum, frame):
-    print('\nReceived signal:', SIGNALS_TO_NAMES_DICT[signum], str(signum))
+    print("\nReceived signal:", SIGNALS_TO_NAMES_DICT[signum], str(signum))
     global __kill_now
     __kill_now = True
 
@@ -56,6 +56,7 @@ server_connection = None
 active_robots = {}
 ids = []
 
+
 async def connect_to_server():
     uri = f"ws://{server_address}:{server_port}"
     connection = await websockets.connect(uri)
@@ -75,7 +76,7 @@ async def connect_to_server():
 async def connect_to_robots():
     for id in active_robots.keys():
         ip = robots[id]
-        if ip != '':
+        if ip != "":
             uri = f"ws://{ip}:{robot_port}"
             connection = await websockets.connect(uri)
 
@@ -132,7 +133,7 @@ async def message_robots(ids, function):
     for id, robot in active_robots.items():
         if id in ids:
             tasks.append(loop.create_task(function(robot)))
-    
+
     await asyncio.gather(*tasks)
 
 
@@ -197,9 +198,11 @@ async def get_data(robot):
         robot.battery_percentage = reply["battery"]["percentage"]
 
         print(f"[Robot {robot.id}] IR readings: {robot.ir_readings}")
-        print("[Robot {}] Battery: {:.2f}V, {}%" .format(robot.id,
-                                                         robot.battery_voltage,
-                                                         robot.battery_percentage))
+        print(
+            "[Robot {}] Battery: {:.2f}V, {}%".format(
+                robot.id, robot.battery_voltage, robot.battery_percentage
+            )
+        )
 
     except Exception as e:
         print(f"{type(e).__name__}: {e}")
@@ -217,6 +220,7 @@ async def send_commands(robot):
         # Construct command message
         message = {}
         if robot.teleop:
+            left = right = 0.0
             message["set_leds_colour"] = "blue"
             if robot.state == RobotState.FORWARDS:
                 left = right = robot.MAX_SPEED
@@ -232,7 +236,7 @@ async def send_commands(robot):
                 left = right = 0
             robot.left = left
             robot.right = right
-        elif not robot is None :
+        elif not robot is None:
             robot = update_flock(robot)
         message["set_motor_speeds"] = {}
         message["set_motor_speeds"]["left"] = robot.left
@@ -290,7 +294,10 @@ async def handler(websocket):
                     active_robots[id].state = RobotState.STOP
 
             if state == MenuState.START:
-                await send_message(websocket, f"\r\nEnter robot ID ({valid_robots}), then press return: ")
+                await send_message(
+                    websocket,
+                    f"\r\nEnter robot ID ({valid_robots}), then press return: ",
+                )
                 robot_id = ""
                 state = MenuState.SELECT
 
@@ -300,15 +307,24 @@ async def handler(websocket):
                     try:
                         if int(robot_id) in valid_robots:
                             valid = True
-                            await send_message(websocket, f"\r\nControlling robot ({release} to release): " + robot_id)
-                            await send_message(websocket, f"\r\nControls: Forwards = {forwards}; Backwards = {backwards}; Left = {left}; Right = {right}; Stop = SPACE")
+                            await send_message(
+                                websocket,
+                                f"\r\nControlling robot ({release} to release): "
+                                + robot_id,
+                            )
+                            await send_message(
+                                websocket,
+                                f"\r\nControls: Forwards = {forwards}; Backwards = {backwards}; Left = {left}; Right = {right}; Stop = SPACE",
+                            )
                             active_robots[int(robot_id)].teleop = True
                             state = MenuState.DRIVE
                     except ValueError:
                         pass
 
                     if not valid:
-                        await send_message(websocket, "\r\nInvalid robot ID, try again: ")
+                        await send_message(
+                            websocket, "\r\nInvalid robot ID, try again: "
+                        )
                         robot_id = ""
                         state = MenuState.SELECT
 
@@ -319,7 +335,9 @@ async def handler(websocket):
             elif state == MenuState.DRIVE:
                 id = int(robot_id)
                 if key == release:
-                    await send_message(websocket, "\r\nReleasing control of robot: " + robot_id)
+                    await send_message(
+                        websocket, "\r\nReleasing control of robot: " + robot_id
+                    )
                     active_robots[id].teleop = False
                     active_robots[id].state = RobotState.STOP
                     state = MenuState.START
@@ -356,7 +374,7 @@ if __name__ == "__main__":
     # robot_ids = [1,31]
 
     for robot_id in robot_ids:
-        if robots[robot_id] != '':
+        if robots[robot_id] != "":
             active_robots[robot_id] = Robot(robot_id)
         else:
             print(f"No IP defined for robot {robot_id}")
@@ -370,7 +388,9 @@ if __name__ == "__main__":
 
     # Listen for keyboard input from teleop websocket client
     print(Fore.GREEN + "[INFO]: Starting teleop server")
-    start_server = websockets.serve(ws_handler=handler, host=None, port=7000, ping_interval=None, ping_timeout=None)
+    start_server = websockets.serve(
+        ws_handler=handler, host=None, port=7000, ping_interval=None, ping_timeout=None
+    )
     loop.run_until_complete(start_server)
 
     # Only communicate with robots that were successfully connected to
@@ -380,7 +400,7 @@ if __name__ == "__main__":
         loop.run_until_complete(get_server_data())
 
         print(Fore.GREEN + "[INFO]: Robots detected:", ids)
-        
+
         print(Fore.GREEN + "[INFO]: Requesting data from detected robots")
         loop.run_until_complete(get_robot_data(ids))
 
@@ -393,7 +413,9 @@ if __name__ == "__main__":
 
         # TODO: Close websocket connections
         if kill_now():
-            loop.run_until_complete(stop_robots(robot_ids)) # Kill all robots, even if not visible
+            loop.run_until_complete(
+                stop_robots(robot_ids)
+            )  # Kill all robots, even if not visible
             break
 
         # Sleep until next control cycle

@@ -31,25 +31,26 @@ def reorientate_to_flock(robot: Robot) -> RobotState:
 
 
 def auto_mode(robot: Robot) -> Robot:
+    left = right = 0
     # Autonomous mode
     distance_av = 0
     bearing_av = 0
     has_36 = False
     for robot_id, neighbour in robot.neighbours.items():
-        distance_av += neighbour['range']
-        bearing_av += neighbour['bearing']
+        distance_av += neighbour["range"]
+        bearing_av += neighbour["bearing"]
         if robot_id == 36:
             has_36 = True
 
-    distance_av /= (len(robot.neighbours.keys()) + 1e-20)
-    bearing_av /= (len(robot.neighbours.keys()) + 1e-20)
+    distance_av /= len(robot.neighbours.keys()) + 1e-20
+    bearing_av /= len(robot.neighbours.keys()) + 1e-20
     distance_threshold = 0.2
 
     closest_target = None
     for target in robot.tasks.values():
         if closest_target is None:
             closest_target = target
-        elif target['range'] < closest_target['range']:
+        elif target["range"] < closest_target["range"]:
             closest_target = target
 
     if robot.state == RobotState.FORWARDS:
@@ -71,18 +72,18 @@ def auto_mode(robot: Robot) -> Robot:
                 right = -robot.MAX_SPEED
 
         elif (time.time() - robot.turn_time > 0.5) and has_36:
-            if robot.neighbours[36]['bearing'] > 15:
+            if robot.neighbours[36]["bearing"] > 15:
                 robot.turn_time = time.time()
                 robot.state = RobotState.RIGHT
-            if robot.neighbours[36]['bearing'] < 15:
+            if robot.neighbours[36]["bearing"] < 15:
                 robot.turn_time = time.time()
                 robot.state = RobotState.LEFT
 
         elif closest_target is not None:
-            if closest_target['bearing'] > 15:
+            if closest_target["bearing"] > 15:
                 robot.turn_time = time.time()
                 robot.state = RobotState.RIGHT
-            if closest_target['bearing'] < 15:
+            if closest_target["bearing"] < 15:
                 robot.turn_time = time.time()
                 robot.state = RobotState.LEFT
 
