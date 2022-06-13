@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 from robots import robots
+from robots import Robot
+from robots import RobotState
+from flocking import update_flock
 
 import asyncio
 import websockets
@@ -52,42 +55,6 @@ robot_port = 80
 server_connection = None
 active_robots = {}
 ids = []
-
-
-class RobotState(Enum):
-    FORWARDS = 1
-    BACKWARDS = 2
-    LEFT = 3
-    RIGHT = 4
-    STOP = 5
-
-
-class Robot:
-
-    BAT_LOW_VOLTAGE = 3.6
-    MAX_SPEED = 100
-
-    def __init__(self, id):
-        self.id = id
-        self.connection = None
-
-        self.orientation = 0
-        self.neighbours = {}
-
-        self.teleop = False
-        self.state = RobotState.STOP
-        self.ir_readings = []
-        self.battery_charging = False
-        self.battery_voltage = 0
-        self.battery_percentage = 0
-
-        self.turn_time = time.time()
-
-        if id < 31:
-            self.ir_threshold = 200  # Pi-puck
-        else:
-            self.ir_threshold = 80  # Mona
-
 
 async def connect_to_server():
     uri = f"ws://{server_address}:{server_port}"
@@ -249,7 +216,6 @@ async def send_commands(robot):
 
         # Construct command message
         message = {}
-
         if robot.teleop:
             message["set_leds_colour"] = "blue"
             if robot.state == RobotState.FORWARDS:
@@ -264,11 +230,13 @@ async def send_commands(robot):
                 right = -robot.MAX_SPEED * 0.8
             elif robot.state == RobotState.STOP:
                 left = right = 0
-        else:
+            robot.left = left
+            robot.right = right
+        elif not robot is None :
             robot = update_flock(robot)
         message["set_motor_speeds"] = {}
-        message["set_motor_speeds"]["left"] = left
-        message["set_motor_speeds"]["right"] = right
+        message["set_motor_speeds"]["left"] = robot.left
+        message["set_motor_speeds"]["right"] = robot.right
 
         # Set Pi-puck RGB LEDs based on battery voltage
         if robot.battery_voltage < robot.BAT_LOW_VOLTAGE:
@@ -384,7 +352,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Specify robots to work with
-    robot_ids = range(36, 41)
+    robot_ids = range(31, 32)
     # robot_ids = [1,31]
 
     for robot_id in robot_ids:

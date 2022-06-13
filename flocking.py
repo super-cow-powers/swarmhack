@@ -1,4 +1,10 @@
+import time
+
+from robots import Robot
+from robots import RobotState
+
 def update_flock(robit: Robot) -> Robot:
+    print(robit)
     robit = auto_mode(robit)
     return robit
 
@@ -29,4 +35,7 @@ def auto_mode(robot: Robot) -> Robot:
                 left = right = 0
                 robot.turn_time = time.time()
                 robot.state = RobotState.FORWARDS
+            robot.left = left
+            robot.right = right
+            return robot
 
