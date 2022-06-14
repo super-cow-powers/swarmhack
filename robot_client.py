@@ -152,13 +152,14 @@ async def connect_to_robots():
         if ip != "":
             uri = f"ws://{ip}:{robot_port}"
             try:
-                connection = await websockets.connect(uri)
+                connection = await asyncio.wait_for(websockets.connect(uri), 2)
                 print("Opening connection to robot:", uri)
                 awake = await check_awake(connection)
                 if awake:
                     print(f"Robot {id} is awake")
                     active_robots[id].connection = connection
                 else:
+                    active_robots.pop(id)
                     print(f"Robot {id} did not respond")
             except:
                 print("Couldn't get " + str(id))
