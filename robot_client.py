@@ -93,40 +93,6 @@ class RobotState(Enum):
 
 
 # Main Robot class to keep track of robot states
-class Robot:
-
-    # 3.6V should give an indication that the battery is getting low, but this value can be experimented with.
-    # Battery percentage might be a better
-    BAT_LOW_VOLTAGE = 3.6
-
-    # Firmware on both robots accepts wheel velocities between -100 and 100.
-    # This limits the controller to fit within that.
-    MAX_SPEED = 100
-
-    def __init__(self, robot_id):
-        self.id = robot_id
-        self.connection = None
-
-        self.orientation = 0
-        self.neighbours = {}
-
-        self.teleop = False
-        self.state = RobotState.STOP
-        self.ir_readings = []
-        self.battery_charging = False
-        self.battery_voltage = 0
-        self.battery_percentage = 0
-
-        self.turn_time = time.time()
-
-        # Pi-puck IR is more sensitive than Mona, so use higher threshold for obstacle detection
-        if robot_id < 31:
-            # Pi-puck
-            self.ir_threshold = 200
-        else:
-            # Mona
-            self.ir_threshold = 80
-
 
 # Connect to websocket server of tracking server
 async def connect_to_server():
@@ -421,7 +387,7 @@ async def handler(websocket):
                         websocket, "\r\nReleasing control of robot: " + robot_id
                     )
                     active_robots[id].teleop = False
-                    active_robots[id].state = RobotState.STOP
+                    active_robots[id].state = RobotState.FORWARDS
                     state = MenuState.START
                 elif key == forwards:
                     await send_message(websocket, "\r\nDriving forwards")
@@ -454,7 +420,7 @@ if __name__ == "__main__":
 
     # Specify robot IDs to work with here. For example for robots 11-15 use:
     #  robot_ids = range(11, 16)
-    robot_ids = range(36, 41)
+    robot_ids = range(36, 37)
 
     if len(robot_ids) == 0:
         raise Exception(
