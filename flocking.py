@@ -72,7 +72,6 @@ def check_fov(robot: Robot, bearing: int) -> Robot:
 
 def auto_mode(robot: Robot, leader_id) -> Robot:
     # global leader_id
-    left = right = 0
     # Autonomous mode
     distance_av = 0
     bearing_av = 0
@@ -126,22 +125,22 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
             robot.turn_time = time.time()
             robot = avoid_obstacle(robot)
         else:
-            robot = setMove(-0.5, 0.5, robot)
+            robot = setMove(-0.9, 1, robot)
 
-        if time.time() - robot.turn_time > random.uniform(0.5, 1.0):
+        if time.time() - robot.turn_time > 0.1:
             robot.turn_time = time.time()
-            robot = setMove(1, 1, robot)
+            robot = setMove(0.5, 0.5, robot)
 
     elif robot.state == RobotState.RIGHT:
         if any(ir > robot.ir_threshold for ir in robot.ir_readings):
             robot.turn_time = time.time()
-            robot.state = avoid_obstacle(robot)
+            robot = avoid_obstacle(robot)
         else:
-            robot = setMove(0.5, -0.5, robot)
+            robot = setMove(1, -0.9, robot)
 
-        if time.time() - robot.turn_time > random.uniform(0.5, 1.0):
+        if time.time() - robot.turn_time > 0.1:
             robot.turn_time = time.time()
-            robot = setMove(1, 1, robot)
+            robot = setMove(0.5, 0.5, robot)
 
     elif robot.state == RobotState.STOP:
         robot.turn_time = time.time()
