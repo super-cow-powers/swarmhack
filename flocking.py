@@ -7,38 +7,40 @@ import random
 
 # leader_id = ""
 
+
 def update_flock(robot: Robot, leader_id) -> Robot:
     # global leader_id
     # print(robot)
     # if robot.teleop:
     #     leader_id = robot.id
     #     print("----------------", leader_id)
-    print("----------------", leader_id)
     robot = auto_mode(robot, leader_id)
 
     return robot
 
-#Move in Direction
-#left: -1 -> 1
-#right: -1 -> 1
+
+# Move in Direction
+# left: -1 -> 1
+# right: -1 -> 1
 def setMove(left: float, right: float, robot: Robot) -> Robot:
-    if ((left > 1) or (right > 1)):
+    if (left > 1) or (right > 1):
         return robot
-    if (left > right):
+    if left > right:
         robot.state = RobotState.LEFT
-    elif (left < right):
+    elif left < right:
         robot.state = RobotState.RIGHT
-    elif ((left == right) and ((left + right) > 0)):
+    elif (left == right) and ((left + right) > 0):
         robot.state = RobotState.FORWARDS
-    elif ((left == right) and ((left + right) < 0)):
+    elif (left == right) and ((left + right) < 0):
         robot.state = RobotState.BACKWARDS
-    elif ((left + right) == 0):
+    elif (left + right) == 0:
         robot.state = RobotState.STOP
     robot.left = left * robot.MAX_SPEED
     robot.right = right * robot.MAX_SPEED
     return robot
 
-#Avoid an obstacle
+
+# Avoid an obstacle
 def avoid_obstacle(robot: Robot) -> Robot:
     if sum(robot.ir_readings[:3]) > sum(robot.ir_readings[2:]):
         robot = setMove(1, -1, robot)
@@ -46,13 +48,15 @@ def avoid_obstacle(robot: Robot) -> Robot:
         robot = setMove(-1, 1, robot)
     return robot
 
-#Move back towards CoM
+
+# Move back towards CoM
 def reorientate_to_flock(robot: Robot) -> Robot:
     if sum(robot.ir_readings[:3]) > sum(robot.ir_readings[2:]):
         robot = setMove(1, -1, robot)
     else:
         robot = setMove(-1, 1, robot)
     return robot
+
 
 def check_fov(robot: Robot, bearing: int) -> Robot:
     if bearing > 20:
@@ -63,9 +67,11 @@ def check_fov(robot: Robot, bearing: int) -> Robot:
         robot = setMove(-1, 1, robot)
     else:
         robot = setMove(1, 1, robot)
+    return robot
+
+
 def auto_mode(robot: Robot, leader_id) -> Robot:
     # global leader_id
-    print("---------" + leader_id)
     left = right = 0
     # Autonomous mode
     distance_av = 0
@@ -91,17 +97,16 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
             closest_target = target
 
     if robot.state == RobotState.FORWARDS:
-        robot = setMove(1,1,robot)
+        robot = setMove(1, 1, robot)
         if any(ir > robot.ir_threshold for ir in robot.ir_readings):
             robot.turn_time = time.time()
             robot = avoid_obstacle(robot)
         elif has_leader:
             print(leader_id + "-------------------")
-            robot = check_fov(robot, robot.neighbours[leader_id]['bearing'])
+            robot = check_fov(robot, robot.neighbours[leader_id]["bearing"])
 
         elif distance_av > distance_threshold:
-            pass
-            # robot = check_fov(robot, bearing_av)
+            robot = check_fov(robot, bearing_av)
 
         elif closest_target is not None:
             pass
@@ -113,7 +118,7 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
             #     robot = setMove(-1,1, robot)
 
     elif robot.state == RobotState.BACKWARDS:
-        robot = setMove(-1,-1,robot)
+        robot = setMove(-1, -1, robot)
         robot.turn_time = time.time()
 
     elif robot.state == RobotState.LEFT:
@@ -121,25 +126,25 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
             robot.turn_time = time.time()
             robot = avoid_obstacle(robot)
         else:
-            robot = setMove(-0.5,0.5,robot)
-            
+            robot = setMove(-0.5, 0.5, robot)
+
         if time.time() - robot.turn_time > random.uniform(0.5, 1.0):
             robot.turn_time = time.time()
-            robot = setMove(1,1,robot)
+            robot = setMove(1, 1, robot)
 
     elif robot.state == RobotState.RIGHT:
         if any(ir > robot.ir_threshold for ir in robot.ir_readings):
             robot.turn_time = time.time()
             robot.state = avoid_obstacle(robot)
         else:
-            robot = setMove(0.5,-0.5,robot)
-        
+            robot = setMove(0.5, -0.5, robot)
+
         if time.time() - robot.turn_time > random.uniform(0.5, 1.0):
             robot.turn_time = time.time()
-            robot = setMove(1,1,robot)
+            robot = setMove(1, 1, robot)
 
     elif robot.state == RobotState.STOP:
         robot.turn_time = time.time()
-        robot = setMove(0,0,robot)
+        robot = setMove(0, 0, robot)
     print(robot.state)
     return robot
