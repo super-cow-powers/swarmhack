@@ -33,7 +33,7 @@ colorama.init(autoreset=True)
 #  or specify a custom server IP address as a string.
 # All ports should remain at 80.
 ##
-server_address = server_york
+server_address = server_sheffield
 server_port = 80
 robot_port = 80
 ##
@@ -296,7 +296,7 @@ async def send_commands(robot):
             robot.left = left
             robot.right = right
         elif not robot is None:
-            robot = update_flock(robot, leader_id[0])
+            robot = update_flock(robot, leader_id[0], active_robots.keys())
         message["set_motor_speeds"] = {}
         message["set_motor_speeds"]["left"] = robot.left
         message["set_motor_speeds"]["right"] = robot.right
@@ -398,7 +398,7 @@ async def handler(websocket):
                         websocket, "\r\nReleasing control of robot: " + robot_id
                     )
                     active_robots[id].teleop = False
-                    active_robots[id] = setMove(0.5,0.5,active_robots[id])
+                    active_robots[id] = setMove(0.5, 0.5, active_robots[id])
                     print("Released Robit -----------------------------------------")
                     state = MenuState.START
                 elif key == forwards:
@@ -432,7 +432,8 @@ if __name__ == "__main__":
 
     # Specify robot IDs to work with here. For example for robots 11-15 use:
     #  robot_ids = range(11, 16)
-    robot_ids = range(36, 41)
+    # robot_ids = range(36, 41)
+    robot_ids = [11, 13, 14]
 
     if len(robot_ids) == 0:
         raise Exception(

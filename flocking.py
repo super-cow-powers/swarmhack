@@ -10,13 +10,13 @@ from scipy import stats, special
 # leader_id = ""
 
 
-def update_flock(robot: Robot, leader_id) -> Robot:
+def update_flock(robot: Robot, leader_id, possible_robots) -> Robot:
     # global leader_id
     # print(robot)
     # if robot.teleop:
     #     leader_id = robot.id
     #     print("----------------", leader_id)
-    robot = auto_mode(robot, leader_id)
+    robot = auto_mode(robot, leader_id, possible_robots)
 
     return robot
 
@@ -94,7 +94,7 @@ def orientate(robot: Robot, other_orientation: float) -> Robot:
             return setMove(-0.5, 1, robot)
 
 
-def auto_mode(robot: Robot, leader_id) -> Robot:
+def auto_mode(robot: Robot, leader_id, possible_robots) -> Robot:
     # global leader_id
     # Autonomous mode
     closest_target = None
@@ -109,7 +109,7 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
     local_orientations = []
     has_leader = False
     for robot_id, neighbour in robot.neighbours.items():
-        if int(robot_id) < 36 or int(robot_id) > 40:
+        if int(robot_id) not in possible_robots:
             continue
         distance_av += neighbour["range"]
         neighbour_bearings.append((neighbour["bearing"] / 180) * pi)
