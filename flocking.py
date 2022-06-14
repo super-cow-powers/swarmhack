@@ -63,9 +63,13 @@ def auto_mode(robot: Robot) -> Robot:
             if bearing_av > 15:
                 robot.turn_time = time.time()
                 robot.state = RobotState.RIGHT
+                left = -robot.MAX_SPEED
+                right = robot.MAX_SPEED
             if bearing_av < -15:
                 robot.turn_time = time.time()
                 robot.state = RobotState.LEFT
+                left = robot.MAX_SPEED
+                right = -robot.MAX_SPEED
 
         elif (time.time() - robot.turn_time > 0.5) and has_36:
             if robot.neighbours[36]["bearing"] > 15:
@@ -84,6 +88,7 @@ def auto_mode(robot: Robot) -> Robot:
                 robot.state = RobotState.LEFT
 
     elif robot.state == RobotState.BACKWARDS:
+        left = right = -robot.MAX_SPEED
         robot.turn_time = time.time()
         robot.state = RobotState.FORWARDS
 
@@ -112,9 +117,9 @@ def auto_mode(robot: Robot) -> Robot:
             robot.state = RobotState.FORWARDS
 
     elif robot.state == RobotState.STOP:
+        left = right = 0
         robot.turn_time = time.time()
         robot.state = RobotState.FORWARDS
-
     robot.left = left
     robot.right = right
     print(robot.state)
