@@ -8,10 +8,10 @@ import random
 def update_flock(robot: Robot) -> Robot:
     # print(robot)
     robot = auto_mode(robot)
-    if any(ir > robot.ir_threshold for ir in robot.ir_readings):
-        print(avoid_obstacle(robot))
-    else:
-        print(RobotState.FORWARDS)
+    # if any(ir > robot.ir_threshold for ir in robot.ir_readings):
+    #     print(avoid_obstacle(robot))
+    # else:
+    #     print(RobotState.FORWARDS)
 
     return robot
 
