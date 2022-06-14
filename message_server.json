@@ -1,23 +1,23 @@
 {
   "request": {
     "check_awake": true,
-    "get_robots": true,
+    "get_robots": true
   },
   "response": {
     "robot_id": {
-      "orientation": 0
-        "neighbours": {
+      "orientation": 0,
+      "neighbours": {
         "neighbour_id": {
           "range": 0.0,
           "bearing": 0,
-          "orientation": 0,
+          "orientation": 0
         }
       },
       "tasks": {
         "task_id": {
           "range": 0.0,
           "bearing": 0,
-          "orientation": 0,
+          "orientation": 0
         }
       }
     }

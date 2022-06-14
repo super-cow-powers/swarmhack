@@ -27,6 +27,8 @@ from colorama import Fore
 colorama.init(autoreset=True)
 
 
+leader_id = ""
+
 ##
 # Replace `server_none` with one of `server_york`, `server_sheffield`, or `server_manchester` here,
 #  or specify a custom server IP address as a string.
@@ -113,6 +115,7 @@ async def connect_to_server():
 
 # Connect to websocket server running on each of the robots
 async def connect_to_robots():
+    global active_robots
     for id in active_robots.keys():
         ip = robots[id]
         if ip != "":
@@ -125,7 +128,6 @@ async def connect_to_robots():
                     print(f"Robot {id} is awake")
                     active_robots[id].connection = connection
                 else:
-                    active_robots.pop(id)
                     print(f"Robot {id} did not respond")
             except:
                 print("Couldn't get " + str(id))
@@ -197,6 +199,7 @@ async def get_server_data():
         ids = list(reply.keys())
         ids = [int(id) for id in ids]
 
+        print(reply.keys())
         # Loop through robots that the server is tracking
         for key, robot in reply.items():
             id = int(key)
@@ -260,6 +263,7 @@ async def get_data(robot):
 # Send motor and LED commands to robot
 # This function also performs the obstacle avoidance and teleop algorithm state machines
 async def send_commands(robot):
+    global leader_id
     try:
         # Turn off LEDs and motors when killed
         if kill_now():
@@ -271,6 +275,7 @@ async def send_commands(robot):
         # Construct command message
         message = {}
         if robot.teleop:
+            leader_id = robot.id
             left = right = 0.0
             # Teleoperation mode
             message["set_leds_colour"] = "blue"
@@ -289,7 +294,7 @@ async def send_commands(robot):
             robot.left = left
             robot.right = right
         elif not robot is None:
-            robot = update_flock(robot)
+            robot = update_flock(robot, leader_id)
         message["set_motor_speeds"] = {}
         message["set_motor_speeds"]["left"] = robot.left
         message["set_motor_speeds"]["right"] = robot.right
@@ -420,7 +425,7 @@ if __name__ == "__main__":
 
     # Specify robot IDs to work with here. For example for robots 11-15 use:
     #  robot_ids = range(11, 16)
-    robot_ids = range(36, 37)
+    robot_ids = range(36, 41)
 
     if len(robot_ids) == 0:
         raise Exception(

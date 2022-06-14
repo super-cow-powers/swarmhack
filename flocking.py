@@ -5,13 +5,16 @@ from robots import RobotState
 import random
 
 
-def update_flock(robot: Robot) -> Robot:
+# leader_id = ""
+
+def update_flock(robot: Robot, leader_id) -> Robot:
+    # global leader_id
     # print(robot)
-    robot = auto_mode(robot)
-    # if any(ir > robot.ir_threshold for ir in robot.ir_readings):
-    #     print(avoid_obstacle(robot))
-    # else:
-    #     print(RobotState.FORWARDS)
+    # if robot.teleop:
+    #     leader_id = robot.id
+    #     print("----------------", leader_id)
+    print("----------------", leader_id)
+    robot = auto_mode(robot, leader_id)
 
     return robot
 
@@ -30,17 +33,39 @@ def reorientate_to_flock(robot: Robot) -> RobotState:
         return RobotState.LEFT
 
 
-def auto_mode(robot: Robot) -> Robot:
+def check_fov(robot: Robot, bearing: int) -> Robot:
+    if bearing > 20:
+        robot.turn_time = time.time()
+        robot.state = RobotState.RIGHT
+        left = robot.MAX_SPEED
+        right = -robot.MAX_SPEED
+    elif bearing < -20:
+        robot.turn_time = time.time()
+        robot.state = RobotState.LEFT
+        left = -robot.MAX_SPEED
+        right = robot.MAX_SPEED
+    else:
+        robot.state = RobotState.FORWARDS
+        left = robot.MAX_SPEED
+        right = robot.MAX_SPEED
+
+
+
+def auto_mode(robot: Robot, leader_id) -> Robot:
+    # global leader_id
+    print("---------" + leader_id)
     left = right = 0
     # Autonomous mode
     distance_av = 0
     bearing_av = 0
-    has_36 = False
+    has_leader = False
     for robot_id, neighbour in robot.neighbours.items():
+        if int(robot_id) < 36 or int(robot_id) > 40:
+            continue
         distance_av += neighbour["range"]
         bearing_av += neighbour["bearing"]
-        if robot_id == 36:
-            has_36 = True
+        if robot_id == leader_id:
+            has_leader = True
 
     distance_av /= len(robot.neighbours.keys()) + 1e-20
     bearing_av /= len(robot.neighbours.keys()) + 1e-20
@@ -58,34 +83,22 @@ def auto_mode(robot: Robot) -> Robot:
         if any(ir > robot.ir_threshold for ir in robot.ir_readings):
             robot.turn_time = time.time()
             robot.state = avoid_obstacle(robot)
+        elif has_leader:
+            print(leader_id + "-------------------")
+            robot = check_fov(robot, robot.neighbours[leader_id]['bearing'])
 
-        elif (time.time() - robot.turn_time > 0.5) and distance_av > distance_threshold:
-            if bearing_av > 15:
-                robot.turn_time = time.time()
-                robot.state = RobotState.RIGHT
-                left = -robot.MAX_SPEED
-                right = robot.MAX_SPEED
-            if bearing_av < -15:
-                robot.turn_time = time.time()
-                robot.state = RobotState.LEFT
-                left = robot.MAX_SPEED
-                right = -robot.MAX_SPEED
-
-        elif (time.time() - robot.turn_time > 0.5) and has_36:
-            if robot.neighbours[36]["bearing"] > 15:
-                robot.turn_time = time.time()
-                robot.state = RobotState.RIGHT
-            if robot.neighbours[36]["bearing"] < 15:
-                robot.turn_time = time.time()
-                robot.state = RobotState.LEFT
+        elif distance_av > distance_threshold:
+            pass
+            # robot = check_fov(robot, bearing_av)
 
         elif closest_target is not None:
-            if closest_target["bearing"] > 15:
-                robot.turn_time = time.time()
-                robot.state = RobotState.RIGHT
-            if closest_target["bearing"] < 15:
-                robot.turn_time = time.time()
-                robot.state = RobotState.LEFT
+            pass
+            # if closest_target["bearing"] > 15:
+            #     robot.turn_time = time.time()
+            #     robot.state = RobotState.RIGHT
+            # if closest_target["bearing"] < 15:
+            #     robot.turn_time = time.time()
+            #     robot.state = RobotState.LEFT
 
     elif robot.state == RobotState.BACKWARDS:
         left = right = -robot.MAX_SPEED
