@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from flocking import update_flock
+from flocking import setMove
 from robots import (
     robots,
     server_none,
@@ -346,11 +347,12 @@ async def handler(websocket):
             if key == "teleop_start":
                 state = MenuState.START
             elif key == "teleop_stop":
-                if state == MenuState.DRIVE:
-                    id = int(robot_id)
-                    active_robots[id].teleop = False
-                    active_robots[id].state = RobotState.STOP
-                    leader_id[0] = ""
+                print("------- teleop stopped ------------")
+                id = int(robot_id)
+                active_robots[id].teleop = False
+                active_robots[id] = setMove(0.4, 0.4, active_robots[id])
+                leader_id[0] = ""
+                sys.exit(1)
 
             if state == MenuState.START:
                 await send_message(
@@ -396,7 +398,8 @@ async def handler(websocket):
                         websocket, "\r\nReleasing control of robot: " + robot_id
                     )
                     active_robots[id].teleop = False
-                    active_robots[id].state = RobotState.FORWARDS
+                    active_robots[id] = setMove(0.5,0.5,active_robots[id])
+                    print("Released Robit -----------------------------------------")
                     state = MenuState.START
                 elif key == forwards:
                     await send_message(websocket, "\r\nDriving forwards")
