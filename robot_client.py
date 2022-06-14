@@ -304,23 +304,25 @@ async def send_commands(robot):
         # Construct command message
         message = {}
         if robot.teleop:
+            left = right = 0.0
             # Teleoperation mode
             message["set_leds_colour"] = "blue"
-        else:
+            if robot.state == RobotState.FORWARDS:
+                left = right = robot.MAX_SPEED
+            elif robot.state == RobotState.BACKWARDS:
+                left = right = -robot.MAX_SPEED
+            elif robot.state == RobotState.LEFT:
+                left = -robot.MAX_SPEED * 0.8
+                right = robot.MAX_SPEED * 0.8
+            elif robot.state == RobotState.RIGHT:
+                left = robot.MAX_SPEED * 0.8
+                right = -robot.MAX_SPEED * 0.8
+            elif robot.state == RobotState.STOP:
+                left = right = 0
+            robot.left = left
+            robot.right = right
+        elif not robot is None:
             robot = update_flock(robot)
-        
-        if robot.state == RobotState.FORWARDS:
-            robot.left = robot.right = robot.MAX_SPEED
-        elif robot.state == RobotState.BACKWARDS:
-            robot.left = robot.right = -robot.MAX_SPEED
-        elif robot.state == RobotState.LEFT:
-            robot.left = -robot.MAX_SPEED * 0.8
-            robot.right = robot.MAX_SPEED * 0.8
-        elif robot.state == RobotState.RIGHT:
-            robot.left = robot.MAX_SPEED * 0.8
-            robot.right = -robot.MAX_SPEED * 0.8
-        elif robot.state == RobotState.STOP:
-            robot.left = right = 0
         message["set_motor_speeds"] = {}
         message["set_motor_speeds"]["left"] = robot.left
         message["set_motor_speeds"]["right"] = robot.right
