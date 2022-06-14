@@ -17,14 +17,14 @@ def update_flock(robot: Robot) -> Robot:
 
 
 def avoid_obstacle(robot: Robot) -> RobotState:
-    if sum(robot.ir_readings[:3]) > sum(robot.ir_readings[3:]):
+    if sum(robot.ir_readings[:3]) > sum(robot.ir_readings[2:]):
         return RobotState.RIGHT
     else:
         return RobotState.LEFT
 
 
 def reorientate_to_flock(robot: Robot) -> RobotState:
-    if sum(robot.ir_readings[:3]) < sum(robot.ir_readings[3:]):
+    if sum(robot.ir_readings[:3]) > sum(robot.ir_readings[2:]):
         return RobotState.RIGHT
     else:
         return RobotState.LEFT

@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 
 from flocking import update_flock
-from robots import robots, server_none, server_york, server_manchester, server_sheffield, Robot, RobotState
+from robots import (
+    robots,
+    server_none,
+    server_york,
+    server_manchester,
+    server_sheffield,
+    Robot,
+    RobotState,
+)
 
 import asyncio
 import websockets
@@ -11,7 +19,6 @@ import time
 import sys
 from enum import Enum
 import time
-import random
 import inspect
 
 import colorama
@@ -25,14 +32,16 @@ colorama.init(autoreset=True)
 #  or specify a custom server IP address as a string.
 # All ports should remain at 80.
 ##
-server_address = server_none
+server_address = server_york
 server_port = 80
 robot_port = 80
 ##
 
 if len(server_address) == 0:
-    raise Exception(f"Enter local tracking server address on line {inspect.currentframe().f_lineno - 6}, "
-                    f"then re-run this script.")
+    raise Exception(
+        f"Enter local tracking server address on line {inspect.currentframe().f_lineno - 6}, "
+        f"then re-run this script."
+    )
 
 
 # Persistent Websockets!!!!!!!!!!!!!!!!
@@ -63,6 +72,7 @@ signal.signal(signal.SIGTERM, __set_kill_now)
 def kill_now() -> bool:
     global __kill_now
     return __kill_now
+
 
 # Ctrl+C termination handled
 ##
@@ -446,8 +456,10 @@ if __name__ == "__main__":
     robot_ids = range(36, 41)
 
     if len(robot_ids) == 0:
-        raise Exception(f"Enter range of robot IDs to control on line {inspect.currentframe().f_lineno - 3}, "
-                        f"then re-run this script.")
+        raise Exception(
+            f"Enter range of robot IDs to control on line {inspect.currentframe().f_lineno - 3}, "
+            f"then re-run this script."
+        )
 
     # Create Robot objects
     for robot_id in robot_ids:
@@ -491,7 +503,9 @@ if __name__ == "__main__":
 
         # TODO: Close websocket connections
         if kill_now():
-            loop.run_until_complete(stop_robots(robot_ids))  # Kill all robots, even if not visible
+            loop.run_until_complete(
+                stop_robots(robot_ids)
+            )  # Kill all robots, even if not visible
             break
 
         # Sleep until next control cycle
