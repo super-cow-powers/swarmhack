@@ -96,7 +96,7 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
             closest_target = target
 
     if robot.state == RobotState.FORWARDS:
-        robot = setMove(1, 1, robot)
+        robot = setMove(0.7, 0.7, robot)
         if any(ir > robot.ir_threshold for ir in robot.ir_readings):
             robot.turn_time = time.time()
             robot = avoid_obstacle(robot)

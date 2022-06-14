@@ -27,7 +27,6 @@ from colorama import Fore
 colorama.init(autoreset=True)
 
 
-leader_id = ""
 
 ##
 # Replace `server_none` with one of `server_york`, `server_sheffield`, or `server_manchester` here,
@@ -83,7 +82,7 @@ def kill_now() -> bool:
 server_connection = None
 active_robots = {}
 ids = []
-
+leader_id = [""]
 
 # Robot states to use in the controller
 class RobotState(Enum):
@@ -277,7 +276,8 @@ async def send_commands(robot):
         # Construct command message
         message = {}
         if robot.teleop:
-            leader_id = robot.id
+            leader_id[0] = robot.id
+            print("------------------" + str(leader_id[0]))
             left = right = 0.0
             # Teleoperation mode
             message["set_leds_colour"] = "blue"
@@ -296,7 +296,7 @@ async def send_commands(robot):
             robot.left = left
             robot.right = right
         elif not robot is None:
-            robot = update_flock(robot, leader_id)
+            robot = update_flock(robot, leader_id[0])
         message["set_motor_speeds"] = {}
         message["set_motor_speeds"]["left"] = robot.left
         message["set_motor_speeds"]["right"] = robot.right
