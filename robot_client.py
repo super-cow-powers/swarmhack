@@ -33,7 +33,7 @@ colorama.init(autoreset=True)
 #  or specify a custom server IP address as a string.
 # All ports should remain at 80.
 ##
-server_address = server_york
+server_address = server_sheffield
 server_port = 80
 robot_port = 80
 ##
@@ -432,8 +432,8 @@ if __name__ == "__main__":
 
     # Specify robot IDs to work with here. For example for robots 11-15 use:
     #  robot_ids = range(11, 16)
-    robot_ids = range(36, 41)
-    # robot_ids = [11, 13, 14]
+    # robot_ids = range(36, 41)
+    robot_ids = range(41, 51)
 
     if len(robot_ids) == 0:
         raise Exception(
