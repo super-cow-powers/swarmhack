@@ -92,7 +92,12 @@ class RobotState(Enum):
 
 class Robot:
 
+    # 3.6V should give an indication that the battery is getting low, but this value can be experimented with.
+    # Battery percentage might be a better
     BAT_LOW_VOLTAGE = 3.6
+
+    # Firmware on both robots accepts wheel velocities between -100 and 100.
+    # This limits the controller to fit within that.
     MAX_SPEED = 100
 
     def __init__(self, id):
@@ -105,7 +110,7 @@ class Robot:
         self.tasks = {}
 
         self.teleop = False
-        self.state = RobotState.STOP
+        self.state = RobotState.FORWARDS
         self.ir_readings = []
         self.battery_charging = False
         self.battery_voltage = 0
