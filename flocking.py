@@ -35,7 +35,9 @@ def setMove(left: float, right: float, robot: Robot) -> Robot:
         robot.state = RobotState.BACKWARDS
     elif (left + right) == 0:
         robot.state = RobotState.STOP
+    # robot.left = 0
     robot.left = left * robot.MAX_SPEED
+    # robot.right = 0
     robot.right = right * robot.MAX_SPEED
     return robot
 
@@ -49,22 +51,13 @@ def avoid_obstacle(robot: Robot) -> Robot:
     return robot
 
 
-# Move back towards CoM
-def reorientate_to_flock(robot: Robot) -> Robot:
-    if sum(robot.ir_readings[:3]) > sum(robot.ir_readings[2:]):
-        robot = setMove(1, -1, robot)
-    else:
-        robot = setMove(-1, 1, robot)
-    return robot
-
-
 def check_fov(robot: Robot, bearing: int) -> Robot:
-    if bearing > 20:
+    if bearing > 15:
         robot.turn_time = time.time()
-        robot = setMove(1, -1, robot)
-    elif bearing < -20:
+        robot = setMove(1, -0.5, robot)
+    elif bearing < -15:
         robot.turn_time = time.time()
-        robot = setMove(-1, 1, robot)
+        robot = setMove(-0.5, 1, robot)
     else:
         robot = setMove(1, 1, robot)
     return robot
@@ -81,7 +74,7 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
             continue
         distance_av += neighbour["range"]
         bearing_av += neighbour["bearing"]
-        if robot_id == leader_id:
+        if str(robot_id) == str(leader_id):
             has_leader = True
 
     distance_av /= len(robot.neighbours.keys()) + 1e-20
@@ -101,20 +94,14 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
             robot.turn_time = time.time()
             robot = avoid_obstacle(robot)
         elif has_leader:
-            print(leader_id + "-------------------")
-            robot = check_fov(robot, robot.neighbours[leader_id]["bearing"])
+            print(leader_id, "-------------------")
+            robot = check_fov(robot, robot.neighbours[str(leader_id)]["bearing"])
 
         elif distance_av > distance_threshold:
             robot = check_fov(robot, bearing_av)
 
         elif closest_target is not None:
-            pass
-            # if closest_target["bearing"] > 15:
-            #     robot.turn_time = time.time()
-            #     robot = setMove(1,-1, robot)
-            # if closest_target["bearing"] < 15:
-            #     robot.turn_time = time.time()
-            #     robot = setMove(-1,1, robot)
+            robot = check_fov(robot, closest_target["bearing"])
 
     elif robot.state == RobotState.BACKWARDS:
         robot = setMove(-1, -1, robot)
@@ -127,7 +114,7 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
         else:
             robot = setMove(-0.9, 1, robot)
 
-        if time.time() - robot.turn_time > 0.1:
+        if time.time() - robot.turn_time > 0.08:
             robot.turn_time = time.time()
             robot = setMove(0.5, 0.5, robot)
 
@@ -138,7 +125,7 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
         else:
             robot = setMove(1, -0.9, robot)
 
-        if time.time() - robot.turn_time > 0.1:
+        if time.time() - robot.turn_time > 0.08:
             robot.turn_time = time.time()
             robot = setMove(0.5, 0.5, robot)
 

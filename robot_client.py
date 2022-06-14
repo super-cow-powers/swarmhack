@@ -27,7 +27,6 @@ from colorama import Fore
 colorama.init(autoreset=True)
 
 
-
 ##
 # Replace `server_none` with one of `server_york`, `server_sheffield`, or `server_manchester` here,
 #  or specify a custom server IP address as a string.
