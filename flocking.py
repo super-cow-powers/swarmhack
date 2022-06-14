@@ -46,7 +46,12 @@ def setMove(left: float, right: float, robot: Robot) -> Robot:
 
 # Avoid an obstacle
 def avoid_obstacle(robot: Robot) -> Robot:
-    if sum(robot.ir_readings[:3]) > sum(robot.ir_readings[2:]):
+    obstacle_on_left = (
+        sum(robot.ir_readings[:3]) > sum(robot.ir_readings[2:])
+        if int(robot.id) > 31
+        else sum(robot.ir_readings[:4]) > sum(robot.ir_readings[4:])
+    )
+    if obstacle_on_left:
         robot = setMove(1, -1, robot)
     else:
         robot = setMove(-1, 1, robot)
