@@ -65,6 +65,35 @@ def check_fov(robot: Robot, bearing: int) -> Robot:
     return robot
 
 
+def orientate(robot: Robot, other_orientation: float) -> Robot:
+    if (
+        abs(other_orientation) - 15 < abs(robot.orientation)
+        and abs(robot.orientation) < abs(other_orientation) + 15
+    ):
+        return setMove(1, 1, robot)
+    elif robot.orientation * other_orientation >= 0:
+        if robot.orientation < other_orientation:
+            # RIGHT
+            return setMove(1, -0.5, robot)
+        else:
+            # LEFT
+            return setMove(-0.5, 1, robot)
+    elif robot.orientation < 0:
+        if abs(robot.orientation) + abs(other_orientation) < 180:
+            # RIGHT
+            return setMove(1, -0.5, robot)
+        else:
+            # LEFT
+            return setMove(-0.5, 1, robot)
+    else:
+        if abs(robot.orientation) + abs(other_orientation) > 180:
+            # RIGHT
+            return setMove(1, -0.5, robot)
+        else:
+            # LEFT
+            return setMove(-0.5, 1, robot)
+
+
 def auto_mode(robot: Robot, leader_id) -> Robot:
     # global leader_id
     # Autonomous mode
@@ -77,12 +106,14 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
 
     distance_av = 0
     neighbour_bearings = []
+    local_orientations = []
     has_leader = False
     for robot_id, neighbour in robot.neighbours.items():
         if int(robot_id) < 36 or int(robot_id) > 40:
             continue
         distance_av += neighbour["range"]
         neighbour_bearings.append((neighbour["bearing"] / 180) * pi)
+        local_orientations.append((neighbour["orientation"] / 180) * pi)
         if str(robot_id) == str(leader_id):
             has_leader = True
 
@@ -91,7 +122,10 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
         for _ in range(2):
             neighbour_bearings.append((closest_target["bearing"] / 180) * pi)
     weighted_bearing = (stats.circmean(neighbour_bearings, high=pi, low=-pi) / pi) * 180
-    distance_threshold = 0.15
+    average_orientation = (
+        stats.circmean(local_orientations, high=pi, low=-pi) / pi
+    ) * 180
+    distance_threshold = 0.2
 
     if robot.state == RobotState.FORWARDS:
         robot = setMove(0.7, 0.7, robot)
@@ -107,6 +141,9 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
 
         elif closest_target is not None:
             robot = check_fov(robot, closest_target["bearing"])
+
+        else:
+            robot = orientate(robot, average_orientation)
 
     elif robot.state == RobotState.BACKWARDS:
         robot = setMove(-1, -1, robot)
