@@ -1,8 +1,10 @@
 import time
 
+from numpy import pi
+
 from robots import Robot
 from robots import RobotState
-import random
+from scipy import stats, special
 
 
 # leader_id = ""
@@ -35,10 +37,10 @@ def setMove(left: float, right: float, robot: Robot) -> Robot:
         robot.state = RobotState.BACKWARDS
     elif (left + right) == 0:
         robot.state = RobotState.STOP
-    # robot.left = 0
-    robot.left = left * robot.MAX_SPEED
-    # robot.right = 0
-    robot.right = right * robot.MAX_SPEED
+    robot.left = 0
+    # robot.left = left * robot.MAX_SPEED
+    robot.right = 0
+    # robot.right = right * robot.MAX_SPEED
     return robot
 
 
@@ -67,18 +69,18 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
     # global leader_id
     # Autonomous mode
     distance_av = 0
-    bearing_av = 0
+    neighbour_bearings = []
     has_leader = False
     for robot_id, neighbour in robot.neighbours.items():
         if int(robot_id) < 36 or int(robot_id) > 40:
             continue
         distance_av += neighbour["range"]
-        bearing_av += neighbour["bearing"]
+        neighbour_bearings.append(neighbour["bearing"] / 180 * pi)
         if str(robot_id) == str(leader_id):
             has_leader = True
 
     distance_av /= len(robot.neighbours.keys()) + 1e-20
-    bearing_av /= len(robot.neighbours.keys()) + 1e-20
+    bearing_av = stats.circmean(neighbour_bearings, high=pi, low=-pi) / pi * 180
     distance_threshold = 0.2
 
     closest_target = None
@@ -93,12 +95,23 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
         if any(ir > robot.ir_threshold for ir in robot.ir_readings):
             robot.turn_time = time.time()
             robot = avoid_obstacle(robot)
-        elif has_leader:
-            print(leader_id, "-------------------")
-            robot = check_fov(robot, robot.neighbours[str(leader_id)]["bearing"])
+        # elif has_leader:
+        #     print(leader_id, "-------------------")
+        #     robot = check_fov(robot, robot.neighbours[str(leader_id)]["bearing"])
 
         elif distance_av > distance_threshold:
-            robot = check_fov(robot, bearing_av)
+            if closest_target is None:
+                print(robot.id, bearing_av)
+                robot = check_fov(robot, bearing_av)
+            else:
+                new_bearing = stats.circmean(
+                    [bearing_av, closest_target["bearing"]],
+                    high=pi,
+                    low=-pi,
+                )
+                print(robot.id, new_bearing)
+                robot = check_fov(robot, new_bearing)
+            # robot = check_fov(robot, bearing_av)
 
         elif closest_target is not None:
             robot = check_fov(robot, closest_target["bearing"])
