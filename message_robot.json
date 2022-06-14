@@ -6,22 +6,16 @@
     "set_leds_colour": "colour value",
     "set_motor_speeds": {
       "left": 0.0,
-      "right": 0.0,
-    },
+      "right": 0.0
+    }
   },
   "response": {
     "awake": true,
-    "ir": [
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
+    "ir": [0, 0, 0, 0, 0],
     "battery": {
       "voltage": 0.0,
-      "percentage": 99,
-    },
+      "percentage": 99
+    }
   },
   "colour_values": [
     "off",
@@ -32,7 +26,6 @@
     "blue",
     "magenta",
     "cyan",
-    "white",
+    "white"
   ]
 }
-

@@ -108,7 +108,7 @@ class Robot:
         self.orientation = 0
         self.neighbours = {}
         self.tasks = {}
-
+        self.target_heading = 0
         self.teleop = False
         self.state = RobotState.FORWARDS
         self.ir_readings = []
