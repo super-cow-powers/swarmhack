@@ -275,8 +275,8 @@ async def send_commands(robot):
         # Construct command message
         message = {}
         if robot.teleop:
-            leader_id[0] = robot.id
-            print("------------------" + str(leader_id[0]))
+            # leader_id[0] = robot.id
+            # print("------------------" + str(leader_id[0]))
             left = right = 0.0
             # Teleoperation mode
             message["set_leds_colour"] = "blue"
@@ -328,6 +328,7 @@ async def send_message(websocket, message):
 # Handle message received on the websocket server
 # Used for teleoperation code, which is controlled by running teleop_client.py in a separate terminal.
 async def handler(websocket):
+    global leader_id
     state = MenuState.START
     robot_id = ""
     valid_robots = list(active_robots.keys())
@@ -349,6 +350,7 @@ async def handler(websocket):
                     id = int(robot_id)
                     active_robots[id].teleop = False
                     active_robots[id].state = RobotState.STOP
+                    leader_id[0] = ""
 
             if state == MenuState.START:
                 await send_message(
@@ -373,6 +375,7 @@ async def handler(websocket):
                                 f"\r\nControls: Forwards = {forwards}; Backwards = {backwards}; Left = {left}; Right = {right}; Stop = SPACE",
                             )
                             active_robots[int(robot_id)].teleop = True
+                            leader_id[0] = robot_id
                             state = MenuState.DRIVE
                     except ValueError:
                         pass
