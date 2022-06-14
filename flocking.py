@@ -86,16 +86,36 @@ def auto_mode(robot: Robot) -> Robot:
     elif robot.state == RobotState.BACKWARDS:
         robot.turn_time = time.time()
         robot.state = RobotState.FORWARDS
+
     elif robot.state == RobotState.LEFT:
+        if any(ir > robot.ir_threshold for ir in robot.ir_readings):
+            robot.turn_time = time.time()
+            robot.state = avoid_obstacle(robot)
+        else:
+            robot.state = RobotState.FORWARDS
+        left = -robot.MAX_SPEED / 2
+        right = robot.MAX_SPEED / 2
         if time.time() - robot.turn_time > random.uniform(0.5, 1.0):
             robot.turn_time = time.time()
             robot.state = RobotState.FORWARDS
+
     elif robot.state == RobotState.RIGHT:
+        if any(ir > robot.ir_threshold for ir in robot.ir_readings):
+            robot.turn_time = time.time()
+            robot.state = avoid_obstacle(robot)
+        else:
+            robot.state = RobotState.FORWARDS
+        left = robot.MAX_SPEED / 2
+        right = -robot.MAX_SPEED / 2
         if time.time() - robot.turn_time > random.uniform(0.5, 1.0):
             robot.turn_time = time.time()
             robot.state = RobotState.FORWARDS
+
     elif robot.state == RobotState.STOP:
         robot.turn_time = time.time()
         robot.state = RobotState.FORWARDS
+
+    robot.left = left
+    robot.right = right
     print(robot.state)
     return robot
