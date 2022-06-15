@@ -195,7 +195,9 @@ async def get_server_data():
         reply = json.loads(reply_json)
 
         # Filter reply from the server, based on our active robots of interest
-        filtered_reply = {int(k): v for (k, v) in reply.items() if int(k) in active_robots.keys()}
+        filtered_reply = {
+            int(k): v for (k, v) in reply.items() if int(k) in active_robots.keys()
+        }
 
         ids = list(filtered_reply.keys())
 
@@ -203,7 +205,11 @@ async def get_server_data():
         for id, robot in filtered_reply.items():
             active_robots[id].orientation = robot["orientation"]
             # Filter out any neighbours that aren't our active robots
-            active_robots[id].neighbours = {k: v for (k, v) in robot["neighbours"].items() if int(k) in active_robots.keys()}
+            active_robots[id].neighbours = {
+                k: v
+                for (k, v) in robot["neighbours"].items()
+                if int(k) in active_robots.keys()
+            }
             active_robots[id].tasks = robot["tasks"]
             print(f"Robot {id}")
             print(f"Orientation = {active_robots[id].orientation}")
@@ -291,7 +297,7 @@ async def send_commands(robot):
             robot.left = left
             robot.right = right
         elif not robot is None:
-            robot = update_flock(robot, leader_id[0], active_robots.keys())
+            robot = update_flock(robot, leader_id[0])
         message["set_motor_speeds"] = {}
         message["set_motor_speeds"]["left"] = robot.left
         message["set_motor_speeds"]["right"] = robot.right

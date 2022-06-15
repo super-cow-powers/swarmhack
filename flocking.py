@@ -4,19 +4,11 @@ from numpy import pi
 
 from robots import Robot
 from robots import RobotState
-from scipy import stats, special
+from scipy import stats
 
 
-# leader_id = ""
-
-
-def update_flock(robot: Robot, leader_id, possible_robots) -> Robot:
-    # global leader_id
-    # print(robot)
-    # if robot.teleop:
-    #     leader_id = robot.id
-    #     print("----------------", leader_id)
-    robot = auto_mode(robot, leader_id, possible_robots)
+def update_flock(robot: Robot, leader_id) -> Robot:
+    robot = auto_mode(robot, leader_id)
 
     return robot
 
@@ -99,7 +91,7 @@ def orientate(robot: Robot, other_orientation: float) -> Robot:
             return setMove(-0.5, 1, robot)
 
 
-def auto_mode(robot: Robot, leader_id, possible_robots) -> Robot:
+def auto_mode(robot: Robot, leader_id) -> Robot:
     # global leader_id
     # Autonomous mode
     closest_target = None
@@ -114,8 +106,6 @@ def auto_mode(robot: Robot, leader_id, possible_robots) -> Robot:
     local_orientations = []
     has_leader = False
     for robot_id, neighbour in robot.neighbours.items():
-        if int(robot_id) not in possible_robots:
-            continue
         distance_av += neighbour["range"]
         neighbour_bearings.append((neighbour["bearing"] / 180) * pi)
         local_orientations.append((neighbour["orientation"] / 180) * pi)
