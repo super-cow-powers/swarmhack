@@ -56,11 +56,11 @@ def check_fov(robot: Robot, bearing: int) -> Robot:
     if bearing > 15:
         print("------------- bearNorm: " + str(bearNorm) + " Turning Right: " + str(-(0.5 + 0.4*bearNorm)))
         robot.turn_time = time.time()
-        robot = setMove(1, -(0.5 + 0.4*bearNorm), robot)
+        robot = setMove(0.5 + + 0.4*bearNorm, -(0.5 + 0.4*bearNorm), robot)
     elif bearing < -15:
         print("------------ bearNorm: " + str(bearNorm) + " Turning Left: " + str(-(0.5 + 0.4*bearNorm)))
         robot.turn_time = time.time()
-        robot = setMove(-(0.5 + 0.4*bearNorm), 1, robot)
+        robot = setMove(-(0.5 + 0.4*bearNorm), 0.5 + + 0.4*bearNorm, robot)
     else:
         robot = setMove(1, 1, robot)
     return robot
