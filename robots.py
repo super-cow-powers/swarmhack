@@ -115,6 +115,7 @@ class Robot:
         self.battery_charging = False
         self.battery_voltage = 0
         self.battery_percentage = 0
+        self.led_colour = "blue"
 
         self.turn_time = time.time()
 

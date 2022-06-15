@@ -300,15 +300,15 @@ async def send_commands(robot):
             robot.right = right
         elif not robot is None:
             robot = update_flock(robot, leader_id[0])
+            message["set_leds_colour"] = robot.led_colour
+
         message["set_motor_speeds"] = {}
         message["set_motor_speeds"]["left"] = robot.left
         message["set_motor_speeds"]["right"] = robot.right
 
         # Set RGB LEDs based on battery voltage
-        if robot.battery_voltage < robot.BAT_LOW_VOLTAGE:
+        if robot.battery_percentage < 20:
             message["set_leds_colour"] = "red"
-        else:
-            message["set_leds_colour"] = "green"
 
         # Send command message
         await robot.connection.send(json.dumps(message))

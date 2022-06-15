@@ -52,15 +52,25 @@ def avoid_obstacle(robot: Robot) -> Robot:
 
 
 def check_fov(robot: Robot, bearing: int) -> Robot:
-    bearNorm = abs(bearing/180)
+    bearNorm = abs(bearing / 180)
     if bearing > 15:
-        print("------------- bearNorm: " + str(bearNorm) + " Turning Right: " + str(-(0.5 + 0.4*bearNorm)))
+        print(
+            "------------- bearNorm: "
+            + str(bearNorm)
+            + " Turning Right: "
+            + str(-(0.5 + 0.4 * bearNorm))
+        )
         robot.turn_time = time.time()
-        robot = setMove(0.5 + + 0.4*bearNorm, -(0.5 + 0.4*bearNorm), robot)
+        robot = setMove(0.5 + +0.4 * bearNorm, -(0.5 + 0.4 * bearNorm), robot)
     elif bearing < -15:
-        print("------------ bearNorm: " + str(bearNorm) + " Turning Left: " + str(-(0.5 + 0.4*bearNorm)))
+        print(
+            "------------ bearNorm: "
+            + str(bearNorm)
+            + " Turning Left: "
+            + str(-(0.5 + 0.4 * bearNorm))
+        )
         robot.turn_time = time.time()
-        robot = setMove(-(0.5 + 0.4*bearNorm), 0.5 + + 0.4*bearNorm, robot)
+        robot = setMove(-(0.5 + 0.4 * bearNorm), 0.5 + +0.4 * bearNorm, robot)
     else:
         robot = setMove(1, 1, robot)
     return robot
@@ -96,10 +106,11 @@ def orientate(robot: Robot, other_orientation: float) -> Robot:
 
 
 def auto_mode(robot: Robot, leader_id) -> Robot:
-    # global leader_id
     # Autonomous mode
+
     closest_target = None
     for target in robot.tasks.values():
+        # Find closest target
         if closest_target is None:
             closest_target = target
         elif target["range"] < closest_target["range"]:
@@ -110,6 +121,7 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
     local_orientations = [(robot.orientation / 180) * pi]
     has_leader = False
     for robot_id, neighbour in robot.neighbours.items():
+        # Average neighbour bearings and orientations
         distance_av += neighbour["range"]
         neighbour_bearings.append((neighbour["bearing"] / 180) * pi)
         local_orientations.append((neighbour["orientation"] / 180) * pi)
@@ -117,6 +129,7 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
             has_leader = True
 
     distance_av /= len(robot.neighbours.keys()) + 1e-20
+    # Include target in bearing
     if closest_target is not None:
         for _ in range(2):
             neighbour_bearings.append((closest_target["bearing"] / 180) * pi)
@@ -126,58 +139,37 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
     ) * 180
     distance_threshold = 0.2
 
+    # Choose IR sensors for pipuck or mona
     front_ir = (
         robot.ir_readings
         if robot.id >= 31
         else robot.ir_readings[:3] + robot.ir_readings[5:]
     )
 
-    # if robot.state == RobotState.FORWARDS:
     robot = setMove(0.7, 0.7, robot)
     if any(ir > robot.ir_threshold for ir in front_ir):
+        # Avoiding obstacle
         robot.turn_time = time.time()
         robot = avoid_obstacle(robot)
+        robot.led_colour = "yellow"
     elif has_leader:
+        # Following leader (teleop)
         robot = check_fov(robot, robot.neighbours[str(leader_id)]["bearing"])
+        robot.led_colour = "white"
 
     elif distance_av > distance_threshold:
+        # Edge of swarm
         print(robot.id, weighted_bearing)
         robot = check_fov(robot, weighted_bearing)
+        robot.led_colour = "magenta"
 
     elif closest_target is not None:
+        # Going to target
         robot = check_fov(robot, closest_target["bearing"])
+        robot.led_colour = "green"
 
     else:
         robot = orientate(robot, average_orientation)
-
-    # elif robot.state == RobotState.BACKWARDS:
-    #     robot = setMove(-1, -1, robot)
-    #     robot.turn_time = time.time()
-
-    # elif robot.state == RobotState.LEFT:
-    #     if any(ir > robot.ir_threshold for ir in robot.ir_readings):
-    #         robot.turn_time = time.time()
-    #         robot = avoid_obstacle(robot)
-    #     else:
-    #         robot = setMove(-0.9, 1, robot)
-
-    #     if time.time() - robot.turn_time > 0.08:
-    #         robot.turn_time = time.time()
-    #         robot = setMove(0.5, 0.5, robot)
-
-    # elif robot.state == RobotState.RIGHT:
-    #     if any(ir > robot.ir_threshold for ir in robot.ir_readings):
-    #         robot.turn_time = time.time()
-    #         robot = avoid_obstacle(robot)
-    #     else:
-    #         robot = setMove(1, -0.9, robot)
-
-    #     if time.time() - robot.turn_time > 0.08:
-    #         robot.turn_time = time.time()
-    #         robot = setMove(0.5, 0.5, robot)
-
-    # elif robot.state == RobotState.STOP:
-    #     robot.turn_time = time.time()
-    #     robot = setMove(0, 0, robot)
+        robot.led_colour = "black"
     print(robot.state)
     return robot
