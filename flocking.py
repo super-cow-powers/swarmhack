@@ -129,52 +129,52 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
         else robot.ir_readings[:3] + robot.ir_readings[5:]
     )
 
-    if robot.state == RobotState.FORWARDS:
-        robot = setMove(0.7, 0.7, robot)
-        if any(ir > robot.ir_threshold for ir in front_ir):
-            robot.turn_time = time.time()
-            robot = avoid_obstacle(robot)
-        elif has_leader:
-            robot = check_fov(robot, robot.neighbours[str(leader_id)]["bearing"])
-
-        elif distance_av > distance_threshold:
-            print(robot.id, weighted_bearing)
-            robot = check_fov(robot, weighted_bearing)
-
-        elif closest_target is not None:
-            robot = check_fov(robot, closest_target["bearing"])
-
-        else:
-            robot = orientate(robot, average_orientation)
-
-    elif robot.state == RobotState.BACKWARDS:
-        robot = setMove(-1, -1, robot)
+    # if robot.state == RobotState.FORWARDS:
+    robot = setMove(0.7, 0.7, robot)
+    if any(ir > robot.ir_threshold for ir in front_ir):
         robot.turn_time = time.time()
+        robot = avoid_obstacle(robot)
+    elif has_leader:
+        robot = check_fov(robot, robot.neighbours[str(leader_id)]["bearing"])
 
-    elif robot.state == RobotState.LEFT:
-        if any(ir > robot.ir_threshold for ir in robot.ir_readings):
-            robot.turn_time = time.time()
-            robot = avoid_obstacle(robot)
-        else:
-            robot = setMove(-0.9, 1, robot)
+    elif distance_av > distance_threshold:
+        print(robot.id, weighted_bearing)
+        robot = check_fov(robot, weighted_bearing)
 
-        if time.time() - robot.turn_time > 0.08:
-            robot.turn_time = time.time()
-            robot = setMove(0.5, 0.5, robot)
+    elif closest_target is not None:
+        robot = check_fov(robot, closest_target["bearing"])
 
-    elif robot.state == RobotState.RIGHT:
-        if any(ir > robot.ir_threshold for ir in robot.ir_readings):
-            robot.turn_time = time.time()
-            robot = avoid_obstacle(robot)
-        else:
-            robot = setMove(1, -0.9, robot)
+    else:
+        robot = orientate(robot, average_orientation)
 
-        if time.time() - robot.turn_time > 0.08:
-            robot.turn_time = time.time()
-            robot = setMove(0.5, 0.5, robot)
+    # elif robot.state == RobotState.BACKWARDS:
+    #     robot = setMove(-1, -1, robot)
+    #     robot.turn_time = time.time()
 
-    elif robot.state == RobotState.STOP:
-        robot.turn_time = time.time()
-        robot = setMove(0, 0, robot)
+    # elif robot.state == RobotState.LEFT:
+    #     if any(ir > robot.ir_threshold for ir in robot.ir_readings):
+    #         robot.turn_time = time.time()
+    #         robot = avoid_obstacle(robot)
+    #     else:
+    #         robot = setMove(-0.9, 1, robot)
+
+    #     if time.time() - robot.turn_time > 0.08:
+    #         robot.turn_time = time.time()
+    #         robot = setMove(0.5, 0.5, robot)
+
+    # elif robot.state == RobotState.RIGHT:
+    #     if any(ir > robot.ir_threshold for ir in robot.ir_readings):
+    #         robot.turn_time = time.time()
+    #         robot = avoid_obstacle(robot)
+    #     else:
+    #         robot = setMove(1, -0.9, robot)
+
+    #     if time.time() - robot.turn_time > 0.08:
+    #         robot.turn_time = time.time()
+    #         robot = setMove(0.5, 0.5, robot)
+
+    # elif robot.state == RobotState.STOP:
+    #     robot.turn_time = time.time()
+    #     robot = setMove(0, 0, robot)
     print(robot.state)
     return robot
