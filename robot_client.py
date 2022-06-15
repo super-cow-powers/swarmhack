@@ -113,7 +113,19 @@ async def connect_to_server():
 # Connect to websocket server running on each of the robots
 async def connect_to_robots():
     global active_robots
+
+    message = {"get_robots": True}
+
+    # Send request for data and wait for reply
+    await server_connection.send(json.dumps(message))
+    reply_json = await server_connection.recv()
+    reply = json.loads(reply_json)
+    available_ids = reply.keys()
+
     for id in active_robots.keys():
+        if id not in available_ids:
+            continue
+
         ip = robots[id]
         if ip != "":
             print(ip)
@@ -400,7 +412,7 @@ async def handler(websocket):
                     )
                     active_robots[id].teleop = False
                     active_robots[id] = setMove(0.5, 0.5, active_robots[id])
-                    print("Released Robit -----------------------------------------")
+                    print("Released Robot -----------------------------------------")
                     state = MenuState.START
                 elif key == forwards:
                     await send_message(websocket, "\r\nDriving forwards")
