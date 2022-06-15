@@ -38,10 +38,11 @@ def setMove(left: float, right: float, robot: Robot) -> Robot:
 
 # Avoid an obstacle
 def avoid_obstacle(robot: Robot) -> Robot:
+    print("-------", robot.ir_readings)
     obstacle_on_left = (
         sum(robot.ir_readings[:3]) > sum(robot.ir_readings[2:])
-        if int(robot.id) > 31
-        else sum(robot.ir_readings[4:]) > sum(robot.ir_readings[:4])
+        if int(robot.id) >= 31
+        else sum(robot.ir_readings[5:]) > sum(robot.ir_readings[:3])
     )
     if obstacle_on_left:
         robot = setMove(1, -1, robot)
@@ -103,7 +104,7 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
 
     distance_av = 0
     neighbour_bearings = []
-    local_orientations = []
+    local_orientations = [(robot.orientation / 180) * pi]
     has_leader = False
     for robot_id, neighbour in robot.neighbours.items():
         distance_av += neighbour["range"]
@@ -122,9 +123,15 @@ def auto_mode(robot: Robot, leader_id) -> Robot:
     ) * 180
     distance_threshold = 0.2
 
+    front_ir = (
+        robot.ir_readings
+        if robot.id >= 31
+        else robot.ir_readings[:3] + robot.ir_readings[5:]
+    )
+
     if robot.state == RobotState.FORWARDS:
         robot = setMove(0.7, 0.7, robot)
-        if any(ir > robot.ir_threshold for ir in robot.ir_readings):
+        if any(ir > robot.ir_threshold for ir in front_ir):
             robot.turn_time = time.time()
             robot = avoid_obstacle(robot)
         elif has_leader:

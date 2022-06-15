@@ -434,7 +434,7 @@ if __name__ == "__main__":
     # Specify robot IDs to work with here. For example for robots 11-15 use:
     #  robot_ids = range(11, 16)
     robot_ids = range(36, 41)
-    # robot_ids = [11, 13, 14]
+    # robot_ids = [10]
 
     if len(robot_ids) == 0:
         raise Exception(
