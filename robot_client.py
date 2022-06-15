@@ -114,17 +114,7 @@ async def connect_to_server():
 async def connect_to_robots():
     global active_robots
 
-    message = {"get_robots": True}
-
-    # Send request for data and wait for reply
-    await server_connection.send(json.dumps(message))
-    reply_json = await server_connection.recv()
-    reply = json.loads(reply_json)
-    available_ids = reply.keys()
-
     for id in active_robots.keys():
-        if id not in available_ids:
-            continue
 
         ip = robots[id]
         if ip != "":
